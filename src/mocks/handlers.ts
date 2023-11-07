@@ -1,5 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { Resource } from "../shared.types";
+import { delay, getRandomIntInclusive } from "../lib/utils";
 
 let resources: Resource[] = [
   {
@@ -22,30 +23,48 @@ let resources: Resource[] = [
 
 export const handlers = [
   http.post("/api/resources", async ({ request }) => {
+    const randomInt = getRandomIntInclusive(300, 1000);
+    await delay(randomInt);
+    const isSuccess = Math.random() < 0.8;
+    if (!isSuccess) {
+      return new HttpResponse(null, { status: 500 });
+    }
+
     const body = (await request.json()) as Pick<
       Resource,
       "type" | "name" | "url"
     >;
-
     const currentDate = new Date();
-    resources.push({
+    const newResource = {
       id: crypto.randomUUID(),
       createdAt: currentDate,
       updatedAt: currentDate,
       ...body,
+    };
+    resources.push(newResource);
+
+    return HttpResponse.json(newResource, {
+      status: 200,
     });
   }),
   http.get("/api/resources", () => {
-    return HttpResponse.json(resources, { status: 200 });
+    return HttpResponse.json(
+      [...resources].sort(
+        (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
+      ),
+      { status: 200 }
+    );
   }),
   http.patch("/api/resources/:id", async ({ params, request }) => {
     const body = await request.json();
 
     resources = resources.map((resource) => {
       if (resource.id === params.id) {
+        const currentDate = new Date();
         return {
           ...resource,
           name: body.name,
+          updatedAt: currentDate,
         };
       }
 
