@@ -18,6 +18,9 @@ type Resource =
       updatedAt: Date;
     };
 
+// https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types
+const VALID_IMAGE_FILE_TYPES = ["image/jpg", "image/jpeg", "image/png"];
+
 function App() {
   const [resources, setResources] = useState<Resource[]>([
     {
@@ -86,9 +89,46 @@ function App() {
             URL 추가
           </button>
 
-          <button type="button" className="w-full border rounded">
+          <label className="w-full border rounded flex justify-center items-center">
             이미지 추가
-          </button>
+            <input
+              type="file"
+              accept={VALID_IMAGE_FILE_TYPES.join(",")}
+              multiple
+              className="opacity-0 w-0 h-0"
+              onChange={(event) => {
+                const fileList = event.target.files;
+                if (fileList === null || fileList.length === 0) {
+                  return;
+                }
+
+                for (const file of fileList) {
+                  const isValidImageFileType = VALID_IMAGE_FILE_TYPES.includes(
+                    file.type
+                  );
+                  if (isValidImageFileType) {
+                    const imageUrl = URL.createObjectURL(file);
+                    const currentDate = new Date();
+                    setResources((prevResources) => [
+                      {
+                        id: crypto.randomUUID(),
+                        type: "image",
+                        name: file.name,
+                        url: imageUrl,
+                        createdAt: currentDate,
+                        updatedAt: currentDate,
+                      },
+                      ...prevResources,
+                    ]);
+                  } else {
+                    alert(`파일명: ${file.name}
+                    .png, .jpg 형식의 이미지 파일을 업로드해 주세요.
+                    `);
+                  }
+                }
+              }}
+            />
+          </label>
         </div>
 
         <div className="flex flex-col gap-2 p-2 flex-1">
