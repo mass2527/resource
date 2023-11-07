@@ -21,13 +21,22 @@ let resources: Resource[] = [
 ];
 
 export const handlers = [
+  http.post("/api/resources", async ({ request }) => {
+    const body = (await request.json()) as Pick<
+      Resource,
+      "type" | "name" | "url"
+    >;
+
+    const currentDate = new Date();
+    resources.push({
+      id: crypto.randomUUID(),
+      createdAt: currentDate,
+      updatedAt: currentDate,
+      ...body,
+    });
+  }),
   http.get("/api/resources", () => {
     return HttpResponse.json(resources, { status: 200 });
-  }),
-  http.delete("/api/resources/:id", ({ params }) => {
-    resources = resources.filter((resource) => resource.id !== params.id);
-
-    return new HttpResponse(null, { status: 204 });
   }),
   http.patch("/api/resources/:id", async ({ params, request }) => {
     const body = await request.json();
@@ -49,5 +58,10 @@ export const handlers = [
         status: 200,
       }
     );
+  }),
+  http.delete("/api/resources/:id", ({ params }) => {
+    resources = resources.filter((resource) => resource.id !== params.id);
+
+    return new HttpResponse(null, { status: 204 });
   }),
 ];
