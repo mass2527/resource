@@ -21,6 +21,17 @@ type Resource =
 // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types
 const VALID_IMAGE_FILE_TYPES = ["image/jpg", "image/jpeg", "image/png"];
 
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Math/random#%EC%B5%9C%EB%8C%93%EA%B0%92%EC%9D%84_%ED%8F%AC%ED%95%A8%ED%95%98%EB%8A%94_%EC%A0%95%EC%88%98_%EB%82%9C%EC%88%98_%EC%83%9D%EC%84%B1%ED%95%98%EA%B8%B0
+function getRandomIntInclusive(min: number, max: number) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min; //최댓값도 포함, 최솟값도 포함
+}
+
 function App() {
   const [resources, setResources] = useState<Resource[]>([
     {
@@ -40,6 +51,34 @@ function App() {
       updatedAt: new Date(),
     },
   ]);
+
+  async function addResource({
+    type,
+    name,
+    url,
+  }: Pick<Resource, "type" | "name" | "url">) {
+    const randomInt = getRandomIntInclusive(300, 1000);
+    await delay(randomInt);
+
+    const isSuccess = Math.random() < 0.8;
+    if (isSuccess) {
+      const currentDate = new Date();
+      setResources((prevResources) => [
+        {
+          id: crypto.randomUUID(),
+          type,
+          name,
+          url,
+          createdAt: currentDate,
+          updatedAt: currentDate,
+        },
+        ...prevResources,
+      ]);
+      alert(`${type === "image" ? "이미지" : "URL"} 등록에 성공했어요.`);
+    } else {
+      alert(`${type === "image" ? "이미지" : "URL"} 등록에 실패했어요.`);
+    }
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -72,18 +111,11 @@ function App() {
               const urlToSave = youtubeVideoId
                 ? `https://www.youtube.com/embed/${youtubeVideoId}`
                 : url;
-              const currentDate = new Date();
-              setResources([
-                {
-                  id: crypto.randomUUID(),
-                  type: "image",
-                  name: urlToSave,
-                  url: urlToSave,
-                  createdAt: currentDate,
-                  updatedAt: currentDate,
-                },
-                ...resources,
-              ]);
+              addResource({
+                type: "url",
+                name: urlToSave,
+                url: urlToSave,
+              });
             }}
           >
             URL 추가
@@ -108,18 +140,11 @@ function App() {
                   );
                   if (isValidImageFileType) {
                     const imageUrl = URL.createObjectURL(file);
-                    const currentDate = new Date();
-                    setResources((prevResources) => [
-                      {
-                        id: crypto.randomUUID(),
-                        type: "image",
-                        name: file.name,
-                        url: imageUrl,
-                        createdAt: currentDate,
-                        updatedAt: currentDate,
-                      },
-                      ...prevResources,
-                    ]);
+                    addResource({
+                      type: "image",
+                      name: file.name,
+                      url: imageUrl,
+                    });
                   } else {
                     alert(`파일명: ${file.name}
                     .png, .jpg 형식의 이미지 파일을 업로드해 주세요.
