@@ -6,6 +6,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { delay } from "./lib/utils";
+import { atom, useAtom } from "jotai";
 
 // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types
 const VALID_IMAGE_FILE_TYPES = ["image/jpg", "image/jpeg", "image/png"];
@@ -24,14 +25,37 @@ function App() {
           </Suspense>
         </div>
       </aside>
-      <div className="flex flex-col flex-1">
-        <div className="h-14 border-b p-2 flex justify-between items-center">
-          <p>
-            https://lallalalaallaaalalaaalalaaalaaaldkdfsalalaalalkfajlkflajflkajskdjflajsdlfkjasdfasd...
-          </p>
-          <button type="button">cancel</button>
-        </div>
-      </div>
+      <ResourceViewer />
+    </div>
+  );
+}
+
+function ResourceViewer() {
+  const [selectedResourceUrl, setSelectedResourceUrl] = useAtom(
+    selectedResourceUrlAtom
+  );
+
+  return (
+    <div className="flex flex-col flex-1">
+      {selectedResourceUrl !== null && (
+        <>
+          <div className="h-14 border-b p-2 flex justify-between items-center gap-2">
+            <p>{selectedResourceUrl}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedResourceUrl(null);
+              }}
+            >
+              cancel
+            </button>
+          </div>
+
+          <div className="p-2 flex-1">
+            <iframe src={selectedResourceUrl} className="w-full h-full" />
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -204,6 +228,8 @@ function updateResource({
   });
 }
 
+const selectedResourceUrlAtom = atom<string | null>(null);
+
 function ResourceListItem({ resource }: { resource: Resource }) {
   const queryClient = useQueryClient();
   const deleteResourceMutation = useMutation({
@@ -223,9 +249,15 @@ function ResourceListItem({ resource }: { resource: Resource }) {
     },
   });
   const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedResourceUrl, setSelectedResourceUrl] = useAtom(
+    selectedResourceUrlAtom
+  );
 
   return (
-    <div className="border rounded-lg p-3 flex flex-col">
+    <div
+      className={`border rounded-lg p-3 flex flex-col 
+      ${selectedResourceUrl === resource.url && "border-blue-500"}`}
+    >
       {isEditMode ? (
         <form
           onSubmit={(event) => {
@@ -267,7 +299,14 @@ function ResourceListItem({ resource }: { resource: Resource }) {
           />
         </form>
       ) : (
-        <div className="line-clamp-2">{resource.name}</div>
+        <p
+          className="line-clamp-2"
+          onClick={() => {
+            setSelectedResourceUrl(resource.url);
+          }}
+        >
+          {resource.name}
+        </p>
       )}
 
       <div className="flex justify-end gap-2">
@@ -287,6 +326,7 @@ function ResourceListItem({ resource }: { resource: Resource }) {
             deleteResourceMutation.mutate(resource.id, {
               onSuccess: () => {
                 alert(`${resource.name}가 삭제됐어요.`);
+                setSelectedResourceUrl(null);
               },
             });
           }}
