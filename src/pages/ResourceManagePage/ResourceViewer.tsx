@@ -1,5 +1,6 @@
 import { useAtom } from "jotai";
 import { selectedResourceUrlAtom } from "./atoms";
+import Iframe from "../../components/Iframe";
 
 export function ResourceViewer() {
   const [selectedResourceUrl, setSelectedResourceUrl] = useAtom(
@@ -23,7 +24,7 @@ export function ResourceViewer() {
           </div>
 
           <div className="p-2 flex-1">
-            <iframe src={selectedResourceUrl} className="w-full h-full" />
+            <Iframe key={selectedResourceUrl} src={selectedResourceUrl} />
           </div>
         </>
       )}
