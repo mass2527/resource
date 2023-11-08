@@ -7,16 +7,16 @@ import {
 } from "@tanstack/react-query";
 import { delay } from "./lib/utils";
 import { atom, useAtom } from "jotai";
-
-// https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types
-const VALID_IMAGE_FILE_TYPES = ["image/jpg", "image/jpeg", "image/png"];
+import UrlResourceCreateButton from "./UrlResourceCreateButton";
+import ImageResourceCreateButton from "./ImageResourceCreateButton";
 
 function App() {
   return (
     <div className="min-h-screen flex">
       <aside className="max-w-sm w-full flex flex-col border-r">
         <div className="h-14 border-b p-2 flex gap-2 justify-between">
-          <AddResource />
+          <UrlResourceCreateButton />
+          <ImageResourceCreateButton />
         </div>
 
         <div className="p-2 flex-1">
@@ -57,131 +57,6 @@ function ResourceViewer() {
         </>
       )}
     </div>
-  );
-}
-
-async function createResource(
-  resource: Pick<Resource, "type" | "name" | "url">
-) {
-  const res = await fetch("/api/resources", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(resource),
-  });
-  if (!res.ok) {
-    throw new Error(
-      `${resource.type === "image" ? "이미지" : "URL"} 등록에 실패했어요.`
-    );
-  }
-
-  return res.json();
-}
-
-function AddResource() {
-  const queryClient = useQueryClient();
-  const addResourceMutation = useMutation({
-    mutationFn: createResource,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["resources"],
-      });
-    },
-  });
-
-  async function addResource({
-    type,
-    name,
-    url,
-  }: Pick<Resource, "type" | "name" | "url">) {
-    addResourceMutation.mutate(
-      {
-        type,
-        name,
-        url,
-      },
-      {
-        onError: (error) => {
-          alert(error);
-        },
-      }
-    );
-  }
-
-  return (
-    <>
-      <button
-        type="button"
-        className="w-full border rounded"
-        disabled={addResourceMutation.isPending}
-        onClick={() => {
-          const url = prompt(
-            "“https://” 또는 “http://”로 시작하는 url을 입력해 주세요."
-          );
-          const isCanceled = url === null;
-          if (isCanceled) {
-            return;
-          }
-
-          const startsWithSchemeRegex = /^https?:\/\//;
-          const isStartsWithScheme = startsWithSchemeRegex.test(url);
-          if (!isStartsWithScheme) {
-            alert("“https://” 또는 “http://”로 시작하는 url을 입력해 주세요.");
-            return;
-          }
-
-          const youtubeUrlRegex =
-            /^https?:\/\/(?:www\.)?youtube.com\/watch\?v=([A-Za-z0-9_-]{11})/;
-          const youtubeVideoId = url.match(youtubeUrlRegex)?.[1];
-          const urlToSave = youtubeVideoId
-            ? `https://www.youtube.com/embed/${youtubeVideoId}`
-            : url;
-          addResource({
-            type: "url",
-            name: urlToSave,
-            url: urlToSave,
-          });
-        }}
-      >
-        URL 추가{addResourceMutation.isPending && "..."}
-      </button>
-
-      <label className="w-full border rounded flex justify-center items-center">
-        이미지 추가{addResourceMutation.isPending && "..."}
-        <input
-          type="file"
-          accept={VALID_IMAGE_FILE_TYPES.join(",")}
-          disabled={addResourceMutation.isPending}
-          multiple
-          className="opacity-0 w-0 h-0"
-          onChange={(event) => {
-            const fileList = event.target.files;
-            if (fileList === null || fileList.length === 0) {
-              return;
-            }
-
-            for (const file of fileList) {
-              const isValidImageFileType = VALID_IMAGE_FILE_TYPES.includes(
-                file.type
-              );
-              if (isValidImageFileType) {
-                const imageUrl = URL.createObjectURL(file);
-                addResource({
-                  type: "image",
-                  name: file.name,
-                  url: imageUrl,
-                });
-              } else {
-                alert(`파일명: ${file.name}
-            .png, .jpg 형식의 이미지 파일을 업로드해 주세요.
-            `);
-              }
-            }
-          }}
-        />
-      </label>
-    </>
   );
 }
 
