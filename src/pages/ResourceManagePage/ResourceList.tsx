@@ -10,6 +10,16 @@ import { ResourceDeleteButton } from "./ResourceDeleteButton";
 export function ResourceList() {
   const resourcesQuery = useResourcesQuery();
 
+  if (resourcesQuery.data.length === 0) {
+    return (
+      <p>
+        등록된 리소스가 없어요.
+        <br />위 "URL 추가" 또는 "이미지 추가" 버튼을 눌러 리소스를 추가해
+        보세요.
+      </p>
+    );
+  }
+
   return (
     <ul className="flex flex-col gap-2">
       {resourcesQuery.data.map((resource) => {

@@ -3,6 +3,8 @@ import ImageResourceCreateButton from "./ImageResourceCreateButton";
 import UrlResourceCreateButton from "./UrlResourceCreateButton";
 import { ResourceViewer } from "./ResourceViewer";
 import { ResourceList } from "./ResourceList";
+import ResourceListPlaceholder from "./ResourceListPlaceholder";
+import QueryErrorResetBoundary from "../../components/ErrorBoundary";
 
 export default function ResourceManagePage() {
   return (
@@ -14,9 +16,11 @@ export default function ResourceManagePage() {
         </div>
 
         <div className="p-2 flex-1">
-          <Suspense fallback={<div>Loading...</div>}>
-            <ResourceList />
-          </Suspense>
+          <QueryErrorResetBoundary>
+            <Suspense fallback={<ResourceListPlaceholder />}>
+              <ResourceList />
+            </Suspense>
+          </QueryErrorResetBoundary>
         </div>
       </aside>
       <ResourceViewer />

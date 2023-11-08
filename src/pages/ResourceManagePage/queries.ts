@@ -6,7 +6,12 @@ import { resourceKeys } from "./queryKeys";
 async function fetchResources(): Promise<Resource[]> {
   await delay(1000);
 
-  return fetch("/api/resources").then((res) => res.json());
+  const res = await fetch("/api/resources");
+  if (!res.ok) {
+    throw Error;
+  }
+
+  return res.json();
 }
 
 export function useResourcesQuery() {
