@@ -1,5 +1,5 @@
-import { VALID_IMAGE_FILE_TYPES } from "./lib/constants";
-import { useCreateResourceMutation } from "./queries";
+import { VALID_IMAGE_FILE_TYPES } from "../../lib/constants";
+import { useCreateResourceMutation } from "./mutations";
 
 export default function ImageResourceCreateButton() {
   const createResourceMutation = useCreateResourceMutation();

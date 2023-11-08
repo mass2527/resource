@@ -1,5 +1,5 @@
-import Button from "./components/Button";
-import { useCreateResourceMutation } from "./queries";
+import Button from "../../components/Button";
+import { useCreateResourceMutation } from "./mutations";
 
 export default function UrlResourceCreateButton() {
   const createResourceMutation = useCreateResourceMutation();
