@@ -10,10 +10,14 @@ export function ResourceDeleteButton({ resourceId }: { resourceId: string }) {
     <button
       type="button"
       disabled={deleteResourceMutation.isPending}
-      onClick={() => {
+      onClick={(event) => {
+        event.stopPropagation();
         deleteResourceMutation.mutate(resourceId, {
           onSuccess: () => {
             setSelectedResourceUrl(null);
+          },
+          onError: (error) => {
+            alert(error.message);
           },
         });
       }}

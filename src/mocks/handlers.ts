@@ -23,6 +23,14 @@ let resources: Resource[] = [
 
 export const handlers = [
   http.post("/api/resources", async ({ request }) => {
+    const body = (await request.json()) as Pick<
+      Resource,
+      "type" | "name" | "url"
+    >;
+    if (resources.some((resource) => resource.url === body.url)) {
+      return new HttpResponse(null, { status: 409 });
+    }
+
     const randomInt = getRandomIntInclusive(300, 1000);
     await delay(randomInt);
     const isSuccess = Math.random() < 0.8;
@@ -30,10 +38,6 @@ export const handlers = [
       return new HttpResponse(null, { status: 500 });
     }
 
-    const body = (await request.json()) as Pick<
-      Resource,
-      "type" | "name" | "url"
-    >;
     const currentDate = new Date();
     const newResource = {
       id: crypto.randomUUID(),
@@ -44,7 +48,7 @@ export const handlers = [
     resources.push(newResource);
 
     return HttpResponse.json(newResource, {
-      status: 200,
+      status: 201,
     });
   }),
   http.get("/api/resources", () => {

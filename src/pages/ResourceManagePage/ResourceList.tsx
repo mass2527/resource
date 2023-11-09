@@ -38,7 +38,7 @@ function ResourceListItem({ resource }: { resource: Resource }) {
 
   return (
     <div
-      className={cn("border rounded-lg p-3 flex flex-col", {
+      className={cn("border rounded-lg p-3 flex flex-col h-full", {
         "border-blue-500": selectedResourceUrl === resource.url,
       })}
       onClick={() => {
@@ -57,13 +57,20 @@ function ResourceListItem({ resource }: { resource: Resource }) {
             }
 
             setIsEditMode(false);
-            updateResourceMutation.mutate({
-              resourceId: resource.id,
-              updatedResource: {
-                ...resource,
-                name,
+            updateResourceMutation.mutate(
+              {
+                resourceId: resource.id,
+                updatedResource: {
+                  ...resource,
+                  name,
+                },
               },
-            });
+              {
+                onError: (error) => {
+                  alert(error.message);
+                },
+              }
+            );
           }}
         >
           <input
@@ -92,7 +99,8 @@ function ResourceListItem({ resource }: { resource: Resource }) {
       <div className="flex justify-end gap-2">
         <button
           type="button"
-          onClick={() => {
+          onClick={(event) => {
+            event.stopPropagation();
             setIsEditMode(true);
           }}
           disabled={updateResourceMutation.isPending}

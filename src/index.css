@@ -6,4 +6,12 @@
   * {
     @apply border-zinc-300;
   }
+
+  label {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    @apply bg-zinc-300;
+  }
 }

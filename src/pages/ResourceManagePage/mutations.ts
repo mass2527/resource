@@ -2,10 +2,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Resource } from "../../shared.types";
 import { resourceKeys } from "./queryKeys";
 
-function deleteResource(resourceId: string) {
-  return fetch(`/api/resources/${resourceId}`, {
+async function deleteResource(resourceId: string) {
+  const res = await fetch(`/api/resources/${resourceId}`, {
     method: "DELETE",
   });
+  if (!res.ok) {
+    throw new Error("리소스 삭제를 실패했어요.");
+  }
 }
 
 export function useDeleteResourceMutation() {
@@ -21,20 +24,23 @@ export function useDeleteResourceMutation() {
   });
 }
 
-function updateResource({
+async function updateResource({
   resourceId,
   updatedResource,
 }: {
   resourceId: string;
   updatedResource: Resource;
 }) {
-  return fetch(`/api/resources/${resourceId}`, {
+  const res = await fetch(`/api/resources/${resourceId}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(updatedResource),
   });
+  if (!res.ok) {
+    throw new Error("리소스 수정을 실패했어요.");
+  }
 }
 
 export function useUpdateResourceMutation() {
@@ -52,7 +58,7 @@ export function useUpdateResourceMutation() {
 
 async function createResource(
   resource: Pick<Resource, "type" | "name" | "url">
-) {
+): Promise<Resource> {
   const res = await fetch("/api/resources", {
     method: "POST",
     headers: {
@@ -61,9 +67,13 @@ async function createResource(
     body: JSON.stringify(resource),
   });
   if (!res.ok) {
-    throw new Error(
-      `${resource.type === "image" ? "이미지" : "URL"} 등록에 실패했어요.`
-    );
+    if (res.status === 409) {
+      throw new Error("이미 등록된 URL이에요.");
+    } else {
+      throw new Error(
+        `${resource.type === "image" ? "이미지" : "URL"} 등록에 실패했어요.`
+      );
+    }
   }
 
   return res.json();

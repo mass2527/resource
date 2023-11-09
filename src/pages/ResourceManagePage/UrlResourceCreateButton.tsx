@@ -39,7 +39,7 @@ export default function UrlResourceCreateButton() {
           },
           {
             onError: (error) => {
-              alert(error);
+              alert(error.message);
             },
           }
         );

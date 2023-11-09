@@ -1,11 +1,16 @@
 import { VALID_IMAGE_FILE_TYPES } from "../../lib/constants";
+import { cn } from "../../lib/utils";
 import { useCreateResourceMutation } from "./mutations";
 
 export default function ImageResourceCreateButton() {
   const createResourceMutation = useCreateResourceMutation();
 
   return (
-    <label className="w-full border rounded flex justify-center items-center">
+    <label
+      className={cn("w-full border rounded flex justify-center items-center", {
+        "bg-zinc-300": createResourceMutation.isPending,
+      })}
+    >
       이미지 추가{createResourceMutation.isPending && "..."}
       <input
         type="file"
@@ -33,7 +38,7 @@ export default function ImageResourceCreateButton() {
                 },
                 {
                   onError: (error) => {
-                    alert(error);
+                    alert(error.message);
                   },
                 }
               );

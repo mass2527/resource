@@ -4,7 +4,7 @@ import UrlResourceCreateButton from "./UrlResourceCreateButton";
 import { ResourceViewer } from "./ResourceViewer";
 import { ResourceList } from "./ResourceList";
 import ResourceListPlaceholder from "./ResourceListPlaceholder";
-import QueryErrorResetBoundary from "../../components/ErrorBoundary";
+import QueryErrorResetBoundary from "../../components/QueryErrorResetBoundary";
 
 export default function ResourceManagePage() {
   return (
@@ -15,7 +15,7 @@ export default function ResourceManagePage() {
           <ImageResourceCreateButton />
         </div>
 
-        <div className="p-2 flex-1">
+        <div className="p-2 flex-1 h-[calc(100vh - 14rem)] overflow-y-auto">
           <QueryErrorResetBoundary>
             <Suspense fallback={<ResourceListPlaceholder />}>
               <ResourceList />
