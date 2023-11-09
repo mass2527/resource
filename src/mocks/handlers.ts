@@ -1,6 +1,8 @@
 import { http, HttpResponse } from "msw";
 import { Resource } from "../shared.types";
 import { delay, getRandomIntInclusive } from "../lib/utils";
+import { resourcePatchSchema } from "../lib/validations";
+import { z } from "zod";
 
 let resources: Resource[] = [
   {
@@ -60,27 +62,36 @@ export const handlers = [
     );
   }),
   http.patch("/api/resources/:id", async ({ params, request }) => {
-    const body = await request.json();
+    try {
+      const json = await request.json();
+      const body = resourcePatchSchema.parse(json);
 
-    resources = resources.map((resource) => {
-      if (resource.id === params.id) {
-        const currentDate = new Date();
-        return {
-          ...resource,
-          name: body.name,
-          updatedAt: currentDate,
-        };
+      resources = resources.map((resource) => {
+        if (resource.id === params.id) {
+          const currentDate = new Date();
+          return {
+            ...resource,
+            name: body.name,
+            updatedAt: currentDate,
+          };
+        }
+
+        return resource;
+      });
+
+      return HttpResponse.json(
+        resources.find((resource) => resource.id === params.id),
+        {
+          status: 200,
+        }
+      );
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return new Response(JSON.stringify(error.issues), { status: 422 });
       }
 
-      return resource;
-    });
-
-    return HttpResponse.json(
-      resources.find((resource) => resource.id === params.id),
-      {
-        status: 200,
-      }
-    );
+      return new Response(null, { status: 500 });
+    }
   }),
   http.delete("/api/resources/:id", ({ params }) => {
     resources = resources.filter((resource) => resource.id !== params.id);

@@ -7,6 +7,7 @@ import { useUpdateResourceMutation } from "./mutations";
 import { cn } from "../../lib/utils";
 import { ResourceDeleteButton } from "./ResourceDeleteButton";
 import IconButton from "../../components/IconButton";
+import { resourcePatchSchema } from "../../lib/validations";
 
 export function ResourceList() {
   const resourcesQuery = useResourcesQuery();
@@ -50,10 +51,11 @@ function ResourceListItem({ resource }: { resource: Resource }) {
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            const formElement = event.currentTarget;
-            const formData = new FormData(formElement);
-            const name = formData.get("name");
-            if (!name) {
+            const formData = new FormData(event.currentTarget);
+            const result = resourcePatchSchema.safeParse({
+              name: formData.get("name"),
+            });
+            if (!result.success) {
               return;
             }
 
@@ -63,7 +65,7 @@ function ResourceListItem({ resource }: { resource: Resource }) {
                 resourceId: resource.id,
                 updatedResource: {
                   ...resource,
-                  name,
+                  name: result.data.name,
                 },
               },
               {
@@ -82,14 +84,7 @@ function ResourceListItem({ resource }: { resource: Resource }) {
             defaultValue={resource.name}
             disabled={updateResourceMutation.isPending}
             onBlur={(event) => {
-              setIsEditMode(false);
-              updateResourceMutation.mutate({
-                resourceId: resource.id,
-                updatedResource: {
-                  ...resource,
-                  name: event.target.value,
-                },
-              });
+              event.target.form?.requestSubmit();
             }}
           />
         </form>
