@@ -1,6 +1,7 @@
 import { useAtom } from "jotai";
 import { selectedResourceUrlAtom } from "./atoms";
 import Iframe from "../../components/Iframe";
+import IconButton from "../../components/IconButton";
 
 export function ResourceViewer() {
   const [selectedResourceUrl, setSelectedResourceUrl] = useAtom(
@@ -13,14 +14,14 @@ export function ResourceViewer() {
         <>
           <div className="h-14 border-b p-2 flex justify-between items-center gap-2">
             <p>{selectedResourceUrl}</p>
-            <button
+            <IconButton
               type="button"
               onClick={() => {
                 setSelectedResourceUrl(null);
               }}
-            >
-              cancel
-            </button>
+              aria-label="리소스 뷰어 닫기"
+              icon="close_19"
+            />
           </div>
 
           <div className="p-2 flex-1">

@@ -6,6 +6,7 @@ import { useResourcesQuery } from "./queries";
 import { useUpdateResourceMutation } from "./mutations";
 import { cn } from "../../lib/utils";
 import { ResourceDeleteButton } from "./ResourceDeleteButton";
+import IconButton from "../../components/IconButton";
 
 export function ResourceList() {
   const resourcesQuery = useResourcesQuery();
@@ -97,16 +98,16 @@ function ResourceListItem({ resource }: { resource: Resource }) {
       )}
 
       <div className="flex justify-end gap-2">
-        <button
+        <IconButton
           type="button"
           onClick={(event) => {
             event.stopPropagation();
             setIsEditMode(true);
           }}
           disabled={updateResourceMutation.isPending}
-        >
-          edit{updateResourceMutation.isPending && "..."}
-        </button>
+          aria-label="리소스 수정"
+          icon="edit_19"
+        />
         <ResourceDeleteButton resourceId={resource.id} />
       </div>
     </div>

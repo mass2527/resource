@@ -16,7 +16,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^4.0.11",
-    "tailwind-merge": "^2.0.0"
+    "tailwind-merge": "^2.0.0",
+    "typed-design-system": "^0.0.228"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
@@ -36,5 +37,9 @@
   },
   "msw": {
     "workerDirectory": "public"
+  },
+  "peerDependencies": {
+    "@emotion/core": "^10.0.0",
+    "@emotion/styled": "^10.0.0"
   }
 }
