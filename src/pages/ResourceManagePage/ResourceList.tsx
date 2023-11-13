@@ -1,5 +1,5 @@
 import { useAtom } from "jotai";
-import { useState } from "react";
+import { MouseEventHandler, useState } from "react";
 import { Resource } from "../../shared.types";
 import { selectedResourceUrlAtom } from "./atoms";
 import { useResourcesQuery } from "./queries";
@@ -13,6 +13,11 @@ import { resourcePatchSchema } from "../../lib/validations";
 
 export function ResourceList() {
   const resourcesQuery = useResourcesQuery();
+  const updateResourceMutation = useUpdateResourceMutation();
+  const deleteResourceMutation = useDeleteResourceMutation();
+  const [selectedResourceUrl, setSelectedResourceUrl] = useAtom(
+    selectedResourceUrlAtom
+  );
 
   if (resourcesQuery.data.length === 0) {
     return (
@@ -27,27 +32,76 @@ export function ResourceList() {
   return (
     <ul className="flex flex-col gap-2">
       {resourcesQuery.data.map((resource) => {
-        return <ResourceListItem key={resource.id} resource={resource} />;
+        return (
+          <ResourceListItem
+            key={resource.id}
+            className={cn({
+              "border-blue-500": selectedResourceUrl === resource.url,
+            })}
+            resource={resource}
+            onResourceNameUpdate={(resourceName) => {
+              updateResourceMutation.mutate(
+                {
+                  resourceId: resource.id,
+                  updatedResource: {
+                    ...resource,
+                    name: resourceName,
+                  },
+                },
+                {
+                  onError: (error) => {
+                    alert(error.message);
+                  },
+                }
+              );
+            }}
+            onDeleteClick={(event) => {
+              event.stopPropagation();
+              deleteResourceMutation.mutate(resource.id, {
+                onSuccess: () => {
+                  setSelectedResourceUrl(null);
+                },
+                onError: (error) => {
+                  alert(error.message);
+                },
+              });
+            }}
+            deleteDisabled={deleteResourceMutation.isPending}
+            onResourceClick={(resource) => {
+              setSelectedResourceUrl(resource.url);
+            }}
+            updateDisabled={updateResourceMutation.isPending}
+          />
+        );
       })}
     </ul>
   );
 }
 
-function ResourceListItem({ resource }: { resource: Resource }) {
-  const updateResourceMutation = useUpdateResourceMutation();
+function ResourceListItem({
+  resource,
+  className,
+  onResourceNameUpdate,
+  onDeleteClick,
+  onResourceClick,
+  deleteDisabled,
+  updateDisabled,
+}: {
+  resource: Resource;
+  className?: string;
+  onResourceNameUpdate: (resourceName: Resource["name"]) => void;
+  onDeleteClick: MouseEventHandler<HTMLButtonElement>;
+  onResourceClick: (resource: Resource) => void;
+  deleteDisabled: boolean;
+  updateDisabled: boolean;
+}) {
   const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedResourceUrl, setSelectedResourceUrl] = useAtom(
-    selectedResourceUrlAtom
-  );
-  const deleteResourceMutation = useDeleteResourceMutation();
 
   return (
     <div
-      className={cn("border rounded-lg p-3 flex flex-col h-full", {
-        "border-blue-500": selectedResourceUrl === resource.url,
-      })}
+      className={cn("border rounded-lg p-3 flex flex-col h-full", className)}
       onClick={() => {
-        setSelectedResourceUrl(resource.url);
+        onResourceClick(resource);
       }}
     >
       {isEditMode ? (
@@ -58,25 +112,10 @@ function ResourceListItem({ resource }: { resource: Resource }) {
             const result = resourcePatchSchema.safeParse({
               name: formData.get("name"),
             });
-            if (!result.success) {
-              return;
+            if (result.success) {
+              setIsEditMode(false);
+              onResourceNameUpdate(resource.name);
             }
-
-            setIsEditMode(false);
-            updateResourceMutation.mutate(
-              {
-                resourceId: resource.id,
-                updatedResource: {
-                  ...resource,
-                  name: result.data.name,
-                },
-              },
-              {
-                onError: (error) => {
-                  alert(error.message);
-                },
-              }
-            );
           }}
         >
           <input
@@ -85,7 +124,6 @@ function ResourceListItem({ resource }: { resource: Resource }) {
             autoFocus
             className="w-full p-2"
             defaultValue={resource.name}
-            disabled={updateResourceMutation.isPending}
             onBlur={(event) => {
               event.target.form?.requestSubmit();
             }}
@@ -102,24 +140,14 @@ function ResourceListItem({ resource }: { resource: Resource }) {
             event.stopPropagation();
             setIsEditMode(true);
           }}
-          disabled={updateResourceMutation.isPending}
+          disabled={updateDisabled}
           aria-label="리소스 수정"
           icon="edit_19"
         />
         <IconButton
           type="button"
-          disabled={deleteResourceMutation.isPending}
-          onClick={(event) => {
-            event.stopPropagation();
-            deleteResourceMutation.mutate(resource.id, {
-              onSuccess: () => {
-                setSelectedResourceUrl(null);
-              },
-              onError: (error) => {
-                alert(error.message);
-              },
-            });
-          }}
+          disabled={deleteDisabled}
+          onClick={onDeleteClick}
           aria-label="리소스 삭제"
           icon="trash_19"
         />
