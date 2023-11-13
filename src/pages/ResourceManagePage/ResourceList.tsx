@@ -3,9 +3,11 @@ import { useState } from "react";
 import { Resource } from "../../shared.types";
 import { selectedResourceUrlAtom } from "./atoms";
 import { useResourcesQuery } from "./queries";
-import { useUpdateResourceMutation } from "./mutations";
+import {
+  useDeleteResourceMutation,
+  useUpdateResourceMutation,
+} from "./mutations";
 import { cn } from "../../lib/utils";
-import { ResourceDeleteButton } from "./ResourceDeleteButton";
 import IconButton from "../../components/IconButton";
 import { resourcePatchSchema } from "../../lib/validations";
 
@@ -37,6 +39,7 @@ function ResourceListItem({ resource }: { resource: Resource }) {
   const [selectedResourceUrl, setSelectedResourceUrl] = useAtom(
     selectedResourceUrlAtom
   );
+  const deleteResourceMutation = useDeleteResourceMutation();
 
   return (
     <div
@@ -103,7 +106,23 @@ function ResourceListItem({ resource }: { resource: Resource }) {
           aria-label="리소스 수정"
           icon="edit_19"
         />
-        <ResourceDeleteButton resourceId={resource.id} />
+        <IconButton
+          type="button"
+          disabled={deleteResourceMutation.isPending}
+          onClick={(event) => {
+            event.stopPropagation();
+            deleteResourceMutation.mutate(resource.id, {
+              onSuccess: () => {
+                setSelectedResourceUrl(null);
+              },
+              onError: (error) => {
+                alert(error.message);
+              },
+            });
+          }}
+          aria-label="리소스 삭제"
+          icon="trash_19"
+        />
       </div>
     </div>
   );
