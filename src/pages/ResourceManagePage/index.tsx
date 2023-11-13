@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import UrlResourceCreateButton from "./UrlResourceCreateButton";
+import UrlAddButton from "../../components/UrlAddButton";
 import { ResourceViewer } from "./ResourceViewer";
 import { ResourceList } from "./ResourceList";
 import ResourceListPlaceholder from "./ResourceListPlaceholder";
@@ -20,7 +20,23 @@ export default function ResourceManagePage() {
     <div className="min-h-screen flex">
       <aside className="max-w-sm w-full border-r">
         <div className="h-14 border-b p-2 flex gap-2 justify-between">
-          <UrlResourceCreateButton />
+          <UrlAddButton
+            disabled={createResourceMutation.isPending}
+            onUrlAdd={(url) => {
+              createResourceMutation.mutate(
+                {
+                  type: "url",
+                  name: url,
+                  url,
+                },
+                {
+                  onError: (error) => {
+                    alert(error.message);
+                  },
+                }
+              );
+            }}
+          />
           <FileInput
             validFileTypes={VALID_IMAGE_FILE_TYPES}
             multiple

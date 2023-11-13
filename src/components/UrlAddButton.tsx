@@ -1,14 +1,16 @@
-import Button from "../../components/Button";
-import { useCreateResourceMutation } from "./mutations";
+import Button from "./Button";
 
-export default function UrlResourceCreateButton() {
-  const createResourceMutation = useCreateResourceMutation();
-
+export default function UrlAddButton({
+  disabled,
+  onUrlAdd,
+}: {
+  disabled: boolean;
+  onUrlAdd: (url: string) => void;
+}) {
   return (
     <Button
       type="button"
-      disabled={createResourceMutation.isPending}
-      loading={createResourceMutation.isPending}
+      disabled={disabled}
       onClick={() => {
         const url = prompt(
           "“https://” 또는 “http://”로 시작하는 url을 입력해 주세요."
@@ -31,18 +33,7 @@ export default function UrlResourceCreateButton() {
         const urlToSave = youtubeVideoId
           ? `https://www.youtube.com/embed/${youtubeVideoId}`
           : url;
-        createResourceMutation.mutate(
-          {
-            type: "url",
-            name: urlToSave,
-            url: urlToSave,
-          },
-          {
-            onError: (error) => {
-              alert(error.message);
-            },
-          }
-        );
+        onUrlAdd(urlToSave);
       }}
     >
       URL 추가
