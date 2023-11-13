@@ -7,9 +7,14 @@ import QueryErrorResetBoundary from "../../components/QueryErrorResetBoundary";
 import { useCreateResourceMutation } from "./mutations";
 import FileInput from "../../components/FileInput";
 import { VALID_IMAGE_FILE_TYPES } from "../../lib/constants";
+import { useAtom } from "jotai";
+import { selectedResourceUrlAtom } from "./atoms";
 
 export default function ResourceManagePage() {
   const createResourceMutation = useCreateResourceMutation();
+  const [selectedResourceUrl, setSelectedResourceUrl] = useAtom(
+    selectedResourceUrlAtom
+  );
 
   return (
     <div className="min-h-screen flex">
@@ -47,7 +52,14 @@ export default function ResourceManagePage() {
           </QueryErrorResetBoundary>
         </div>
       </aside>
-      <ResourceViewer />
+      {selectedResourceUrl !== null && (
+        <ResourceViewer
+          resourceUrl={selectedResourceUrl}
+          onCloseClick={() => {
+            setSelectedResourceUrl(null);
+          }}
+        />
+      )}
     </div>
   );
 }
